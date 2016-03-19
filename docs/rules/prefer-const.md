@@ -14,23 +14,23 @@ The following patterns are considered problems:
 /*eslint prefer-const: 2*/
 /*eslint-env es6*/
 
+// it's initialized and never reassigned.
 let a = 3;
 console.log(a);
 
+let a;
+a = 0;
+console.log(a);
+
 // `i` is redefined (not reassigned) on each loop step.
-for (let i in [1,2,3]) {
+for (let i in [1, 2, 3]) {
     console.log(i);
 }
 
 // `a` is redefined (not reassigned) on each loop step.
-for (let a of [1,2,3]) {
+for (let a of [1, 2, 3]) {
     console.log(a);
 }
-
-// the initializer is separated.
-let a;
-a = 0;
-console.log(a);
 ```
 
 The following patterns are not considered problems:
@@ -39,16 +39,38 @@ The following patterns are not considered problems:
 /*eslint prefer-const: 2*/
 /*eslint-env es6*/
 
-let a; // there is no initialization.
+// using const.
+const a = 0;
+
+// it's never initialized.
+let a;
+console.log(a);
+
+// it's reassigned after initialized.
+let a;
+a = 0;
+a = 1;
+console.log(a);
+
+// it's initialized in a different block from the declaration.
+let a;
+if (true) {
+    a = 0;
+}
+console.log(a);
+
+// it's initialized at a place that we cannot write a variable declaration.
+let a;
+if (true) a = 0;
 console.log(a);
 
 // `i` gets a new binding each iteration
-for (const i in [1,2,3]) {
+for (const i in [1, 2, 3]) {
   console.log(i);
 }
 
 // `a` gets a new binding each iteration
-for (const a of [1,2,3]) {
+for (const a of [1, 2, 3]) {
   console.log(a);
 }
 
@@ -57,16 +79,70 @@ for (let i = 0, end = 10; i < end; ++i) {
     console.log(a);
 }
 
-// the initializer is located at another block.
-let a;
-if (true) {
-    a = 0;
-}
-console.log(a);
-
 // suggest to use `no-var` rule.
 var b = 3;
 console.log(b);
+```
+
+## Options
+
+```json
+{
+    "prefer-const": ["error", {"mixed": true}]
+}
+```
+
+* `mixed` (`boolean`) -
+  The flag to warn variables inside of destructuring even if it's a mix of reassigned and never reassigned.
+  Default is `true`.
+
+### mixed
+
+The following patterns are considered problems when configured with `{"mixed": true}`:
+
+```js
+/*eslint prefer-const: 2*/
+/*eslint-env es6*/
+
+let {a, b} = obj;    /*error 'b' is never reassigned, use 'const' instead.*/
+a = a + 1;
+```
+
+The following patterns are not considered problems when configured with `{"mixed": true}`:
+
+```js
+/*eslint prefer-const: 2*/
+/*eslint-env es6*/
+
+// using const.
+const {a: a0, b} = obj;
+const a = a0 + 1;
+
+// all variables are reassigned.
+let {a, b} = obj;
+a = a + 1;
+b = b + 1;
+```
+
+The following patterns are considered problems when configured with `{"mixed": false}`:
+
+```js
+/*eslint prefer-const: 2*/
+/*eslint-env es6*/
+
+let {a, b} = obj;    /*error 'a' is never reassigned, use 'const' instead.
+                             'b' is never reassigned, use 'const' instead.*/
+```
+
+The following patterns are not considered problems when configured with `{"mixed": false}`:
+
+```js
+/*eslint prefer-const: 2*/
+/*eslint-env es6*/
+
+// 'b' is never reassigned, but '{a, b}' is a mix of reassigned and never reassigned.
+let {a, b} = obj;
+a = a + 1;
 ```
 
 ## When Not To Use It
